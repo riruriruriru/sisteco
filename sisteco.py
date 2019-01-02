@@ -1,10 +1,69 @@
 import numpy as np
 from numpy import sin, linspace, pi
 
-
+archivos = []
 #ord(char) = ascii value
 #unichar(ascii value) = char
 alfabeto = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","ñ","o","p","q","r","s","t","u","v","w","x","y","z"]
+
+def menu():
+    #Muestra el menu principal y usando input se pide al usuario que ingrese la opcion que desea ejecutar
+    option = 0
+    while option == 0:
+        print('Menu Principal')
+        print('Opciones:')
+        print('1) Ingresar nombre de archivo de texto plano')
+        print('2) Salir')
+        user_input = input('Ingrese el numero de la opcion que desea ejecutar: ')
+        if user_input=="2":
+            #se retorna y finaliza el programa
+            return 0
+        elif user_input=="1":
+            #se pide ingresar un nombre de archivo
+            error = 1
+            while error == 1:
+                input_nombre = input('Ingrese nombre del archivo de texto plano: ')
+                #la apertura se realiza inicialmente en un try-except, para evitar que el programa se caiga
+                #en caso de que el archivo no pueda ser abierto
+                try:
+                    open(input_nombre, 'rb')
+                    error = 0
+                except FileNotFoundError:
+                    error = 1       
+                    print('nombre de archivo no existente o fuera de directorio')
+            #llamado a funcion que abre un archivo verificado y retorna datos de este
+            textoPlano = open(input_nombre, 'r')
+            archivos.append(textoPlano)
+            option = second_menu(archivos)
+            
+        else:
+            print('Ingrese una opcion correcta')
+            
+    return
+ 
+def second_menu(archivos):
+	textoCifrado = []
+	textoDescifrado = []
+	for i in archivos:
+		key, tamanio = getKey()
+		llave = stringToAscii(key)
+		print(i)
+		print("uwu")
+		#print(i.read())
+		texto = i.readlines()
+		for j in range(0, len(texto)):
+			texto[j] = texto[j].strip('\n\r\0')
+		print(texto)
+		print("owo")
+		textoCifrado +=cifrado(stringToAscii(texto[0]), llave, alfabeto)
+		print("archivo completo cifrado: ")
+		print(asciiToString(textoCifrado))
+		textoDescifrado +=descifrar(textoCifrado, llave, alfabeto)
+		print("archivo completo descifrado")
+		print(asciiToString(textoDescifrado))
+		
+	
+	
 def cifrado(plainText, key, alfabeto):
 	print("CIFRADO:...")
 	codificado = codificar(plainText, key, 0, alfabeto)
@@ -228,4 +287,8 @@ cifrado_texto1 = cifrado(textoAscii, llaveAscii, alfabeto)
 cifrado_texto2 = cifrado(textoAscii2, llaveAscii2, alfabeto)
 avalancha(plainText2, plainText222, numberArray, llave2number, cifrado_texto1, cifrado_texto2)
 descifrado_texto1 = descifrar(cifrado_texto1, llaveAscii, alfabeto)
-
+if descifrado_texto1 == textoAscii:
+	print("$$$$$$$$$$$$$$$$$$$$$")
+	print("CIFRADO-DESCIFRADO CORRECTO")
+	print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+menu()
