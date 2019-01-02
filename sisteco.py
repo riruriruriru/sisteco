@@ -10,6 +10,8 @@ def cifrado(plainText, key, alfabeto):
 	codificado = codificar(plainText, key, 0, alfabeto)
 	if len(key)< len(plainText):
 		newKey = codificado[len(codificado)-len(key):]
+	else: 
+		newKey = key[:]
 	print("TEXTO CODIFICADO ITERACION 1: ")
 	print(asciiToString(codificado))
 	print("LLAVE NUEVA: ")
@@ -18,9 +20,10 @@ def cifrado(plainText, key, alfabeto):
 	print("#######")
 	codificado2 = codificar(codificado, newKey, 0, alfabeto)
 	print("TEXTO CODIFICADO ITERACION 2: ")
-	print(asciiToString(codificado2))
+	print(asciiToString(codificado2+newKey))
+	print(codificado+newKey)
 	print("//////////////")
-	return codificado2
+	return codificado2+newKey
 	
 def codificar(plainText, key, offset, alfabeto):
 	print("CODIFICANDO: ")
@@ -47,8 +50,29 @@ def codificar(plainText, key, offset, alfabeto):
 	print("NUEVA LLAVE: ")
 	print(newKey)
 	print("#############")
-	return codificar(codificado, newKey, offset+1, alfabeto)
+	return codificar(codificado, newKey[::-1], offset+1, alfabeto)
+
+def descifrar(cipherText, key, alfabeto):
+	print("DESCIFRADO:...")
+	newKey = cipherText[len(cipherText)-len(key):]
+	print("NUEVA LLAVE: ")
+	print(newKey)
+	print(asciiToString(newKey))
+	print("&&&&&&&&&&&&&&")
+	decodificado = decodificar(cipherText[0:len(cipherText)-len(key)], newKey, 0, alfabeto)
+	print("TEXTO DECODIFICADO ITERACION 1: ")
+	print(asciiToString(decodificado))
+	print("LLAVE NUEVA: ")
+	print(newKey)
+	print(len(newKey))
+	print("#######")
+	decodificado2 = decodificar(decodificado, key, 0, alfabeto)
+	print("TEXTO CODIFICADO ITERACION 2: ")
+	print(asciiToString(decodificado2))
+	print("//////////////")
+	return decodificado2
 	
+
 def decodificar(cipherText, key, offset, alfabeto):
 	print("DECODIFICANDO: ")
 	decodificado = cipherText[:]
@@ -70,7 +94,7 @@ def decodificar(cipherText, key, offset, alfabeto):
 	print("######")
 	print("nueva llave: ")
 	print(newKey)
-	return decodificar(decodificado, newKey, offset+1, alfabeto)
+	return decodificar(decodificado, newKey[::-1], offset+1, alfabeto)
 	
 
 def stringToNumber(string, alfabeto):
@@ -203,3 +227,5 @@ avalancha(plainText2, plainText222, numberArray, llave2number, textoCifrado, tex
 cifrado_texto1 = cifrado(textoAscii, llaveAscii, alfabeto)
 cifrado_texto2 = cifrado(textoAscii2, llaveAscii2, alfabeto)
 avalancha(plainText2, plainText222, numberArray, llave2number, cifrado_texto1, cifrado_texto2)
+descifrado_texto1 = descifrar(cifrado_texto1, llaveAscii, alfabeto)
+
