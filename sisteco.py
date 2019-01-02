@@ -66,23 +66,54 @@ def second_menu(archivos):
 	
 def cifrado(plainText, key, alfabeto):
 	print("CIFRADO:...")
-	codificado = codificar(plainText, key, 0, alfabeto)
-	if len(key)< len(plainText):
-		newKey = codificado[len(codificado)-len(key):]
-	else: 
-		newKey = key[:]
-	print("TEXTO CODIFICADO ITERACION 1: ")
+	contador = 0
+	offset = 0
+	codificado = []
+	keys = []
+	iteraciones = 0
+	arreglo = []
+	print("largo texto plano: ")
+	print(len(plainText))
+	if len(plainText)%2 == 0:
+		print("DENTRO CIFRADO")
+		iteraciones = len(plainText)/2
+		codificado = codificar(plainText, key, 0, alfabeto)
+		contador = contador + 1
+		while contador < iteraciones:
+			print("WHILE CIFRADO OWO")
+			newKey = codificado[offset:contador*2]
+			print("NUEVA LLAVE :")
+			print(newKey)
+			codificado = codificar(codificado, newKey, 0, alfabeto)
+			keys = keys + newKey
+			offset+=2
+			contador+=1
+	else:
+		print("no entro a while")
+		
+	#codificado = codificar(plainText, key, 0, alfabeto)
+	#if len(key)< len(plainText):
+	#	newKey = codificado[len(codificado)-len(key):]
+	#else: 
+#		newKey = key[:]
+#	print("TEXTO CODIFICADO ITERACION 1: ")
+#	print(asciiToString(codificado))
+#	print("LLAVE NUEVA: ")
+#	print(newKey)
+#	print(len(newKey))
+#	print("#######")
+#	codificado2 = codificar(codificado, newKey, 0, alfabeto)
+#	print("TEXTO CODIFICADO ITERACION 2: ")
+#	print(asciiToString(codificado2+newKey))
+#	print(codificado+newKey)
+#	print("//////////////")
+	arreglo.append(iteraciones)
+	print(codificado)
 	print(asciiToString(codificado))
-	print("LLAVE NUEVA: ")
-	print(newKey)
-	print(len(newKey))
-	print("#######")
-	codificado2 = codificar(codificado, newKey, 0, alfabeto)
-	print("TEXTO CODIFICADO ITERACION 2: ")
-	print(asciiToString(codificado2+newKey))
-	print(codificado+newKey)
-	print("//////////////")
-	return codificado2+newKey
+	print("UNION CODIFICADO + KEYS")
+	print(asciiToString(codificado+keys))
+	print(codificado+keys+arreglo)
+	return (codificado+keys+arreglo)
 	
 def codificar(plainText, key, offset, alfabeto):
 	print("CODIFICANDO: ")
@@ -103,33 +134,70 @@ def codificar(plainText, key, offset, alfabeto):
 			#print("PAR DE NUMEROS: " + str(codificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((codificado[cont+offset*len(key)]+1 + key[cont]+1)))
 			codificado[cont+offset*len(key)] = (codificado[cont+offset*len(key)] + key[cont])+1
 			newKey.append((codificado[cont+offset*len(key)]))
-	print(codificado)
-	print(asciiToString(codificado))
-	print("############")
-	print("NUEVA LLAVE: ")
-	print(newKey)
-	print("#############")
+	#print(codificado)
+	#print(asciiToString(codificado))
+	#print("############")
+	#print("NUEVA LLAVE: ")
+	#print(newKey)
+	#print("#############")
 	return codificar(codificado, newKey[::-1], offset+1, alfabeto)
 
 def descifrar(cipherText, key, alfabeto):
 	print("DESCIFRADO:...")
-	newKey = cipherText[len(cipherText)-len(key):]
-	print("NUEVA LLAVE: ")
-	print(newKey)
-	print(asciiToString(newKey))
-	print("&&&&&&&&&&&&&&")
-	decodificado = decodificar(cipherText[0:len(cipherText)-len(key)], newKey, 0, alfabeto)
-	print("TEXTO DECODIFICADO ITERACION 1: ")
+	offset = 0
+	iteraciones = cipherText[-1]
+	contador = 1
+	offset = 0
+	decodificado = []
+	keys = []
+	arreglo = []
+	print(iteraciones)
+	decodificado = cipherText[offset:len(cipherText)-int(iteraciones)*2+1]
+	keys = cipherText[len(cipherText)-int(iteraciones)*2+1:len(cipherText)-1]
+	offset = len(keys)
+	if len(decodificado)%2 == 0:
+		print("TEXTO CIFRADO A DESCIFRAR: ")
+		print(decodificado)
+		print("777777777777777777777777777777777")
+		print("LLAVES: ")
+		print(keys)
+		print("$$$$$$$$$$$$$$$$$$$")
+		while contador < int(iteraciones):
+			newKey = keys[offset-2:offset]
+			offset -= 2
+			contador += 1
+			print("WHILE DECODIFICAR: ")
+			print("LLAVE A APLICAR: ")
+			print(newKey)
+			print("###############")
+			decodificado = decodificar(decodificado, newKey, 0, alfabeto)
+		print("DECODIFICACION CASI FINAL: ")
+		print(decodificado)
+		print(asciiToString(decodificado))
+		print("UWU")
+		decodificado = decodificar(decodificado, key, 0, alfabeto)
+		
+	#newKey = cipherText[len(cipherText)-len(key):]
+	#print("NUEVA LLAVE: ")
+	#print(newKey)
+	#print(asciiToString(newKey))
+	#print("&&&&&&&&&&&&&&")
+	#decodificado = decodificar(cipherText[0:len(cipherText)-len(key)], newKey, 0, alfabeto)
+	#print("TEXTO DECODIFICADO ITERACION 1: ")
+	#print(asciiToString(decodificado))
+	#print("LLAVE NUEVA: ")
+	#print(newKey)
+	#print(len(newKey))
+	#print("#######")
+	#decodificado2 = decodificar(decodificado, key, 0, alfabeto)
+	#print("TEXTO CODIFICADO ITERACION 2: ")
+	#print(asciiToString(decodificado2))
+	#print("//////////////")
+	#return decodificado2
+	print("DECODIFICACION FINAL: ")
+	print(decodificado)
 	print(asciiToString(decodificado))
-	print("LLAVE NUEVA: ")
-	print(newKey)
-	print(len(newKey))
-	print("#######")
-	decodificado2 = decodificar(decodificado, key, 0, alfabeto)
-	print("TEXTO CODIFICADO ITERACION 2: ")
-	print(asciiToString(decodificado2))
-	print("//////////////")
-	return decodificado2
+	return decodificado
 	
 
 def decodificar(cipherText, key, offset, alfabeto):
@@ -144,15 +212,15 @@ def decodificar(cipherText, key, offset, alfabeto):
 		if decodificado[cont+offset*len(key)]-key[cont]>=0:
 			#print("MAYOR QUE 0, PAR DE NUMEROS: " + str(decodificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((decodificado[cont+offset*len(key)] - key[cont])%(26)-1))
 			newKey.append(decodificado[cont+offset*len(key)])
-			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]-1)%(127)
+			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]-1)%(128)
 		else:
 			#print("MENOR QUE 0, PAR DE NUMEROS: " + str(decodificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((decodificado[cont+offset*len(key)]+1 - key[cont]+27-1)))
 			newKey.append(decodificado[cont+offset*len(key)])
-			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]+128-1)%127
-	print(asciiToString(decodificado))
-	print("######")
-	print("nueva llave: ")
-	print(newKey)
+			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]+128-1)%128
+	#print(asciiToString(decodificado))
+	#print("######")
+	#print("nueva llave: ")
+	#print(newKey)
 	return decodificar(decodificado, newKey[::-1], offset+1, alfabeto)
 	
 
@@ -287,8 +355,11 @@ cifrado_texto1 = cifrado(textoAscii, llaveAscii, alfabeto)
 cifrado_texto2 = cifrado(textoAscii2, llaveAscii2, alfabeto)
 avalancha(plainText2, plainText222, numberArray, llave2number, cifrado_texto1, cifrado_texto2)
 descifrado_texto1 = descifrar(cifrado_texto1, llaveAscii, alfabeto)
-if descifrado_texto1 == textoAscii:
+descifrado_texto2 = descifrar(cifrado_texto2, llaveAscii2, alfabeto)
+if descifrado_texto1 == textoAscii and descifrado_texto2 == textoAscii2:
 	print("$$$$$$$$$$$$$$$$$$$$$")
 	print("CIFRADO-DESCIFRADO CORRECTO")
 	print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+else:
+	print("CIFRADO INCORRECTO")
 menu()
