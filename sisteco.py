@@ -1,0 +1,205 @@
+import numpy as np
+from numpy import sin, linspace, pi
+
+
+#ord(char) = ascii value
+#unichar(ascii value) = char
+alfabeto = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","ñ","o","p","q","r","s","t","u","v","w","x","y","z"]
+def cifrado(plainText, key, alfabeto):
+	print("CIFRADO:...")
+	codificado = codificar(plainText, key, 0, alfabeto)
+	if len(key)< len(plainText):
+		newKey = codificado[len(codificado)-len(key):]
+	print("TEXTO CODIFICADO ITERACION 1: ")
+	print(asciiToString(codificado))
+	print("LLAVE NUEVA: ")
+	print(newKey)
+	print(len(newKey))
+	print("#######")
+	codificado2 = codificar(codificado, newKey, 0, alfabeto)
+	print("TEXTO CODIFICADO ITERACION 2: ")
+	print(asciiToString(codificado2))
+	print("//////////////")
+	return codificado2
+	
+def codificar(plainText, key, offset, alfabeto):
+	print("CODIFICANDO: ")
+	codificado = plainText[:]
+	newKey = []
+	for cont in range(0, len(key)):
+		#plainText[cont+offset*len(key)] = (plainText[cont+offset*len(key)] + key[cont])%(128) #cambiar para codificar cualquier ascii 128
+		if cont+offset*len(key)>=len(codificado):
+			print("retornando...")
+			print(codificado)
+			return codificado
+		#print("PAR DE LETRAS: " + alfabeto[plainText[cont+offset*len(key)]]+ " - " + alfabeto[key[cont]]+ " a reemplazar: " +alfabeto[(plainText[cont+offset*len(key)] + key[cont])%(26)])
+		if codificado[cont+offset*len(key)]+key[cont]>=127:
+			#print("PAR DE NUMEROS: " + str(codificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((codificado[cont+offset*len(key)] + key[cont])%(26)+1))
+			codificado[cont+offset*len(key)] = (codificado[cont+offset*len(key)] + key[cont])%(127)
+			newKey.append(codificado[cont+offset*len(key)])
+		else:
+			#print("PAR DE NUMEROS: " + str(codificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((codificado[cont+offset*len(key)]+1 + key[cont]+1)))
+			codificado[cont+offset*len(key)] = (codificado[cont+offset*len(key)] + key[cont])+1
+			newKey.append((codificado[cont+offset*len(key)]))
+	print(codificado)
+	print(asciiToString(codificado))
+	print("############")
+	print("NUEVA LLAVE: ")
+	print(newKey)
+	print("#############")
+	return codificar(codificado, newKey, offset+1, alfabeto)
+	
+def decodificar(cipherText, key, offset, alfabeto):
+	print("DECODIFICANDO: ")
+	decodificado = cipherText[:]
+	newKey = []
+	for cont in range(0, len(key)):
+		#plainText[cont+offset*len(key)] = (plainText[cont+offset*len(key)] + key[cont])%(128) #cambiar para codificar cualquier ascii 128
+		if cont+offset*len(key)>=len(decodificado):
+			return decodificado
+		#print("PAR DE LETRAS: " + alfabeto[plainText[cont+offset*len(key)]]+ " - " + alfabeto[key[cont]]+ " a reemplazar: " +alfabeto[(plainText[cont+offset*len(key)] + key[cont])%(26)])
+		if decodificado[cont+offset*len(key)]-key[cont]>=0:
+			#print("MAYOR QUE 0, PAR DE NUMEROS: " + str(decodificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((decodificado[cont+offset*len(key)] - key[cont])%(26)-1))
+			newKey.append(decodificado[cont+offset*len(key)])
+			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]-1)%(127)
+		else:
+			#print("MENOR QUE 0, PAR DE NUMEROS: " + str(decodificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((decodificado[cont+offset*len(key)]+1 - key[cont]+27-1)))
+			newKey.append(decodificado[cont+offset*len(key)])
+			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]+128-1)%127
+	print(asciiToString(decodificado))
+	print("######")
+	print("nueva llave: ")
+	print(newKey)
+	return decodificar(decodificado, newKey, offset+1, alfabeto)
+	
+
+def stringToNumber(string, alfabeto):
+	asciiArray = []
+	for char in string:
+		asciiArray.append(alfabeto.index(char))
+	#print("Llave en ascii: ")
+	#print(asciiArray)
+	return asciiArray
+def numberToString(numberArray, alfabeto):
+	string = ''.join(alfabeto[element] for element in numberArray)
+	return string
+
+def stringToAscii(string):
+	asciiArray = []
+	for char in string:
+		asciiArray.append(ord(char))
+	#print("Llave en ascii: ")
+	#print(asciiArray)
+	return asciiArray
+
+def asciiToString(asciiArray):
+	string = ''
+	string = ''.join(chr(element) for element in asciiArray)
+	#print("ascii array como string: ")
+	#print(string)
+	return string
+	
+	
+def getKey():
+	largo = 0
+	while largo == 0 or largo > 256:
+		key = input("Ingrese key que desee usar (cualquier cadena de caracteres ascii entre 1 a 256 de longitud): ")
+		largo = len(key)
+	print(key)
+	return key, largo
+	
+
+def analizarDif(key1, key2, tipo):
+	contador = 0
+	largo = 0
+	if len(key1) > len(key2):
+		largo = len(key2)
+	else:
+		largo = len(key1)
+	for i in range(0, largo):
+			if key1[i] != key2[i]:
+				contador = contador + 1
+	pDiferencia = 100*contador/len(key2)
+	if tipo == 2:
+		print("Llave 2 se diferencia de Llave 1 en un " +str(pDiferencia)+ "% y "+ str(contador) +" caracteres")
+		return contador
+	elif tipo == 1:
+		print("Texto 2 se diferencia de Texto 1 en un " +str(pDiferencia)+ "% y "+ str(contador) +" caracteres")
+		return contador
+	else:
+		print("Texto Cifrado 2 se diferencia de Texto Cifrado 1 en un " +str(pDiferencia)+ "% y "+ str(contador) +" caracteres")
+		return contador, pDiferencia
+
+def avalancha(plainText1, plainText2, key1, key2, cifrado1, cifrado2):
+	contador = 0
+	if plainText1 == plainText2 and (key1 == key2):
+		print("Textos planos y llaves son iguales")
+		return
+	elif plainText1 == plainText2 and key1 != key2:
+		print("Textos planos iguales, llaves son distintas")
+		diferenciaKeys = analizarDif(key1, key2, 2)
+		diferenciaCifrado, pCifrado = analizarDif(cifrado1, cifrado2, 3)
+		if pCifrado >= 50.0:
+			print("Se cumple avalancha")
+		else: 
+			print("No se cumple avalancha")
+	elif plainText1 != plainText2 and key1 == key2:
+		print("Textos planos distintos, llaves iguales")
+		diferenciaTextos = analizarDif(plainText1, plainText2, 1)
+		diferenciaCifrado, pCifrado = analizarDif(cifrado1, cifrado2, 3)
+		if pCifrado >= 50.0:
+			print("Se cumple avalancha")
+		else: 
+			print("No se cumple avalancha")
+	else:
+		print("Llave y textos son distintos")
+		diferenciaTextos = analizarDif(plainText1, plainText2, 1)
+		diferenciaKeys = analizarDif(key1, key2, 2)
+		diferenciaCifrado, pCifrado = analizarDif(cifrado1, cifrado2, 3)
+		if pCifrado >= 50.0:
+			print("Se cumple avalancha")
+		else: 
+			print("No se cumple avalancha")
+	return 0;
+		
+llave, largo = getKey()
+llave2, largo2 = getKey()
+llaveAscii = stringToAscii(llave)
+llaveAscii2 = stringToAscii(llave2)
+#stringKey = asciiToString(llaveAscii)
+plainText = input("Ingrese texto a codificar: ")
+plainText22 = input("ingrese texto 2 a codificar: ")
+textoAscii = stringToAscii(plainText)
+print("----------------------")
+print("Texto plano en ascii")
+print(textoAscii)
+print("Texto plano original transformado desde ascii")
+print(asciiToString(textoAscii))
+print("----------------------------------")
+textoAscii2 = stringToAscii(plainText22)
+plainText2 = stringToNumber(plainText, alfabeto)
+llave2number = stringToNumber(llave2, alfabeto)
+plainText222 = stringToNumber(plainText22, alfabeto)
+numberArray = stringToNumber(llave, alfabeto)
+textoCifrado = codificar(textoAscii, llaveAscii, 0, alfabeto)
+textoCifrado2 = codificar(textoAscii2, llaveAscii2, 0, alfabeto)
+print("texto cifrado 1: ")
+print(asciiToString(textoCifrado))
+print("////////////////////////")
+print("texto cifrado 2: ")
+print(asciiToString(textoCifrado2))
+print("/////////////////////////") 
+number_string = numberToString(numberArray, alfabeto)
+print(asciiToString(textoCifrado))
+textoDecodificado = decodificar(textoCifrado, llaveAscii, 0, alfabeto)
+textoDecodificado2 = decodificar(textoCifrado2, llaveAscii2, 0, alfabeto)
+print("texto descifrado 1: ")
+print(asciiToString(textoDecodificado))
+print("//////////")
+print("texto descifrado 2: ")
+print(asciiToString(textoDecodificado2))
+print("////////")
+avalancha(plainText2, plainText222, numberArray, llave2number, textoCifrado, textoCifrado2)
+cifrado_texto1 = cifrado(textoAscii, llaveAscii, alfabeto)
+cifrado_texto2 = cifrado(textoAscii2, llaveAscii2, alfabeto)
+avalancha(plainText2, plainText222, numberArray, llave2number, cifrado_texto1, cifrado_texto2)
