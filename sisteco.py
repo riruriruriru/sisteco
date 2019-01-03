@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import sin, linspace, pi
+import random
 
 archivos = []
 #ord(char) = ascii value
@@ -54,7 +55,7 @@ def second_menu(archivos):
 		for j in range(0, len(texto)):
 			texto[j] = texto[j].strip('\n\r\0')
 		print(texto)
-		print("owo")
+		#print("owo")
 		textoCifrado +=cifrado(stringToAscii(texto[0]), llave, alfabeto)
 		print("archivo completo cifrado: ")
 		print(asciiToString(textoCifrado))
@@ -65,24 +66,24 @@ def second_menu(archivos):
 	
 	
 def cifrado(plainText, key, alfabeto):
-	print("CIFRADO:...")
+	#print("CIFRADO:...")
 	contador = 0
 	offset = 0
 	codificado = []
 	keys = []
 	iteraciones = 0
 	arreglo = []
-	print("largo texto plano: ")
+	#print("largo texto plano: ")
 	print(len(plainText))
 	if len(plainText)%2 == 0:
-		print("DENTRO CIFRADO")
+		#print("DENTRO CIFRADO")
 		iteraciones = len(plainText)/2
 		codificado = codificar(plainText, key, 0, alfabeto)
 		contador = contador + 1
 		while contador < iteraciones:
-			print("WHILE CIFRADO OWO")
+			#print("WHILE CIFRADO OWO")
 			newKey = codificado[offset:contador*2]
-			print("NUEVA LLAVE :")
+			#print("NUEVA LLAVE :")
 			print(newKey)
 			codificado = codificar(codificado, newKey, 0, alfabeto)
 			keys = keys + newKey
@@ -108,22 +109,22 @@ def cifrado(plainText, key, alfabeto):
 #	print(codificado+newKey)
 #	print("//////////////")
 	arreglo.append(iteraciones)
-	print(codificado)
-	print(asciiToString(codificado))
-	print("UNION CODIFICADO + KEYS")
-	print(asciiToString(codificado+keys))
-	print(codificado+keys+arreglo)
+	#print(codificado)
+	#print(asciiToString(codificado))
+	#print("UNION CODIFICADO + KEYS")
+	#print(asciiToString(codificado+keys))
+	#print(codificado+keys+arreglo)
 	return (codificado+keys+arreglo)
 	
 def codificar(plainText, key, offset, alfabeto):
-	print("CODIFICANDO: ")
+	#print("CODIFICANDO: ")
 	codificado = plainText[:]
 	newKey = []
 	for cont in range(0, len(key)):
 		#plainText[cont+offset*len(key)] = (plainText[cont+offset*len(key)] + key[cont])%(128) #cambiar para codificar cualquier ascii 128
 		if cont+offset*len(key)>=len(codificado):
-			print("retornando...")
-			print(codificado)
+			#print("retornando...")
+			#print(codificado)
 			return codificado
 		#print("PAR DE LETRAS: " + alfabeto[plainText[cont+offset*len(key)]]+ " - " + alfabeto[key[cont]]+ " a reemplazar: " +alfabeto[(plainText[cont+offset*len(key)] + key[cont])%(26)])
 		if codificado[cont+offset*len(key)]+key[cont]>=127:
@@ -270,7 +271,7 @@ def analizarDif(key1, key2, tipo):
 	for i in range(0, largo):
 			if key1[i] != key2[i]:
 				contador = contador + 1
-	pDiferencia = 100*contador/len(key2)
+	pDiferencia = 100*contador/largo
 	if tipo == 2:
 		print("Llave 2 se diferencia de Llave 1 en un " +str(pDiferencia)+ "% y "+ str(contador) +" caracteres")
 		return contador
@@ -312,6 +313,57 @@ def avalancha(plainText1, plainText2, key1, key2, cifrado1, cifrado2):
 		else: 
 			print("No se cumple avalancha")
 	return 0;
+
+def randomWord(size):
+	line = ''
+	for c in range(size):
+		line += random.choice(alfabeto)
+	return line
+
+def crearArchivoPrueba():
+	print("Creando archivo de prueba...")
+	archivoPrueba = open('texto.test','w')
+	for i in range(1000):
+		lineSize = 50
+		line = randomWord(lineSize)
+		if i < 999:
+			line += '\n'
+		archivoPrueba.write(line)
+
+	
+	
+
+def averageAvalancha():
+	archivo = open("texto.test","r")
+	keySize = random.randint(1,255)
+	key = randomWord(keySize)
+	keyAscii = stringToAscii(key)
+	i = 0
+	porcentajeDifAcum = 0
+	for linea in archivo:
+		i+=1
+		linea = linea.replace('\n','')
+		textoAscii1 = stringToAscii(linea)
+		textoCifrado1 = cifrado(textoAscii1,keyAscii,alfabeto)
+		lineaAvalancha = list(linea)
+		lineaAvalancha[-1] = random.choice(alfabeto)
+		lineaAvalancha = ''.join(lineaAvalancha)
+		print("Texto a comparar: " + linea +" "+ lineaAvalancha)
+		textoAscii2 = stringToAscii(lineaAvalancha)
+		textoCifrado2 = cifrado(textoAscii2,keyAscii,alfabeto)
+		print("Textos cifrados: "+ str(textoCifrado1) + " " + str(textoCifrado2))
+		cont, porcentajeDif = analizarDif(textoCifrado1,textoCifrado2,3)
+		porcentajeDifAcum += porcentajeDif
+	print("i:" + str(i))
+	averageDif = porcentajeDifAcum/i
+	return averageDif
+
+
+
+crearArchivoPrueba()
+averageDif = averageAvalancha()	
+
+print("El porcentaje de diferencia promedio de los textos cifrados es de: " + str(averageDif) + "%")
 		
 llave, largo = getKey()
 llave2, largo2 = getKey()
