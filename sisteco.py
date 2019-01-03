@@ -246,7 +246,7 @@ def stringToAscii(string):
 
 def asciiToString(asciiArray):
 	string = ''
-	string = ''.join(chr(element) for element in asciiArray)
+	string = ''.join(chr(int(element)) for element in asciiArray)
 	#print("ascii array como string: ")
 	#print(string)
 	return string
@@ -324,7 +324,7 @@ def crearArchivoPrueba():
 	print("Creando archivo de prueba...")
 	archivoPrueba = open('texto.test','w')
 	for i in range(1000):
-		lineSize = 50
+		lineSize = random.randint(5,25)*2
 		line = randomWord(lineSize)
 		if i < 999:
 			line += '\n'
@@ -335,7 +335,7 @@ def crearArchivoPrueba():
 
 def averageAvalancha():
 	archivo = open("texto.test","r")
-	keySize = random.randint(1,255)
+	keySize = 16
 	key = randomWord(keySize)
 	keyAscii = stringToAscii(key)
 	i = 0
@@ -358,12 +358,42 @@ def averageAvalancha():
 	averageDif = porcentajeDifAcum/i
 	return averageDif
 
+def averageAvalanchaKey():
+	archivo = open("texto.test","r")
+	keySize = 16
+	key = randomWord(keySize)
+	keyAscii = stringToAscii(key)
+	keyAvalancha = list(key)
+	keyAvalancha[-1] = random.choice(alfabeto)
+	keyAvalancha = ''.join(keyAvalancha)
+	keyAvalanchaAscii = stringToAscii(keyAvalancha)
+
+	i = 0
+	porcentajeDifAcum = 0
+	for linea in archivo:
+		i+=1
+		linea = linea.replace('\n','')
+		textoAscii1 = stringToAscii(linea)
+		textoCifrado1 = cifrado(textoAscii1,keyAscii,alfabeto)
+		
+		textoCifrado2 = cifrado(textoAscii1,keyAvalanchaAscii,alfabeto)
+		print("Textos cifrados: "+ str(textoCifrado1) + " " + str(textoCifrado2))
+		cont, porcentajeDif = analizarDif(textoCifrado1,textoCifrado2,3)
+		porcentajeDifAcum += porcentajeDif
+	print("i:" + str(i))
+	averageDif = porcentajeDifAcum/i
+	print("keys: "+ key +" "+keyAvalancha)
+	return averageDif
+
 
 
 crearArchivoPrueba()
-averageDif = averageAvalancha()	
+averageDifWord = averageAvalancha()	
+averageDifKey = averageAvalanchaKey()
 
-print("El porcentaje de diferencia promedio de los textos cifrados es de: " + str(averageDif) + "%")
+print("El porcentaje de diferencia promedio de los textos cifrados (cambiando texto) es de: " + str(averageDifWord) + "%")
+print("El porcentaje de diferencia promedio de los textos cifrados (cambiando llave) es de: " + str(averageDifKey) + "%")
+
 		
 llave, largo = getKey()
 llave2, largo2 = getKey()
