@@ -74,26 +74,28 @@ def cifrado(plainText, key, alfabeto):
 	iteraciones = 0
 	arreglo = []
 	plainText2 = plainText[:]
-	#print("largo texto plano: ")
-	#print(len(plainText2))
-	if len(plainText2)%2 != 0:
-		plainText2.append(ord(random.choice(alfabeto)))
-		iteraciones = len(plainText2)/2
-		paridad = 0
-	else:
-		paridad = 1
-		iteraciones = len(plainText2)/2
+	##print("largo texto plano: ")
+	##print(len(plainText2))
+	#if len(plainText2)%2 != 0:
+	#	plainText2.append(random.randint(0,127))
+	#	iteraciones = len(plainText2)/2
+	#	paridad = 0
+	#else:
+	#	paridad = 1
+	#	iteraciones = len(plainText2)/2
 		#print("DENTRO CIFRADO")
-	#algo.write(str(plainText2)+'\n')
+	##algo.write(str(plainText2)+'\n')
 	codificado = codificar(plainText2, key, 0, alfabeto)
-	#algo.write(str(codificado)+" Llave"+str(key) +" "+'\n')
+	##algo.write(str(codificado)+" Llave"+str(key) +" "+'\n')
 	contador = 0
 	corrimiento = 1
-	keys = codificado[0:int(iteraciones)*2]
+	#keys = codificado[0:int(iteraciones)*2]
+	iteraciones = len(key)/2
 	while contador < iteraciones:
 		#print("WHILE CIFRADO OWO")
 		#newKey = codificado[offset:corrimiento*2]
-		newKey = keys[offset:corrimiento*2]
+		#newKey = keys[offset:corrimiento*2]
+		newKey = key[offset:corrimiento*2]
 		#print("NUEVA LLAVE :")
 		#print(newKey)
 		#print("###################")
@@ -118,8 +120,10 @@ def cifrado(plainText, key, alfabeto):
 		#print(newKey)
 		llaveParcial = []
 		#if(){}
-		llaveParcial.append(keys[offset+contador])
-		llaveParcial.append(keys[offset+contador+1])
+		#llaveParcial.append(keys[offset+contador])
+		#llaveParcial.append(keys[offset+contador+1])
+		llaveParcial.append(key[offset+contador])
+		llaveParcial.append(key[offset+contador+1])
 		#print("##################################")
 		#print("LLAVES PARA SEGUNDO CODIFICADO AL REVES: ")
 		#print("iteracion: "+ str(contador)+ " Numero iteraciones: "+str(iteraciones))
@@ -146,8 +150,8 @@ def cifrado(plainText, key, alfabeto):
 #	print(asciiToString(codificado2+newKey))
 #	print(codificado+newKey)
 #	print("//////////////")
-	arreglo.append(int(iteraciones))
-	arreglo.append(paridad)
+	#arreglo.append(int(iteraciones))
+	#arreglo.append(paridad)
 	#print(codificado+keys+arreglo)
 	#print(len(codificado+keys+arreglo))
 	#algo.write(str(codificado+keys+arreglo)+" Llave"+str(key) +" "+'\n')
@@ -167,29 +171,34 @@ def codificar(plainText, key, offset, alfabeto):
 	#print("CODIFICANDO: ")
 	codificado = plainText[:]
 	newKey = []
-	for cont in range(0, len(key)):
+	contador = 0
+	for cont in range(0, len(plainText)):
 		#plainText[cont+offset*len(key)] = (plainText[cont+offset*len(key)] + key[cont])%(128) #cambiar para codificar cualquier ascii 128
 		#print(codificado)
-		if cont+offset*len(key)>=len(codificado):
+		#if cont+offset*len(key)>=len(codificado):
 			#print("retornando...")
 			#print(codificado)
-			return codificado
+		#	return codificado
+		if contador == len(key):
+			contador = 0
 		#print("PAR DE LETRAS: " + alfabeto[plainText[cont+offset*len(key)]]+ " - " + alfabeto[key[cont]]+ " a reemplazar: " +alfabeto[(plainText[cont+offset*len(key)] + key[cont])%(26)])
-		if codificado[cont+offset*len(key)]+key[cont]>=127:
+		if codificado[cont]+key[contador]>=127:
 			#print("PAR DE NUMEROS: " + str(codificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((codificado[cont+offset*len(key)] + key[cont])%(26)+1))
-			codificado[cont+offset*len(key)] = (codificado[cont+offset*len(key)] + key[cont])%(127)
-			newKey.append(codificado[cont+offset*len(key)])
+			codificado[cont] = (codificado[cont] + key[contador])%(127)
+			newKey.append(codificado[cont])
+			contador +=1
 		else:
 			#print("PAR DE NUMEROS: " + str(codificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((codificado[cont+offset*len(key)]+1 + key[cont]+1)))
-			codificado[cont+offset*len(key)] = (codificado[cont+offset*len(key)] + key[cont])+1
-			newKey.append((codificado[cont+offset*len(key)]))
+			codificado[cont] = (codificado[cont] + key[contador])+1
+			newKey.append((codificado[cont]))
+			contador+=1
 	#print(codificado)
 	#print(asciiToString(codificado))
 	#print("############")
 	#print("NUEVA LLAVE: ")
 	#print(newKey)
 	#print("#############")
-	return codificar(codificado, key, offset+1, alfabeto)
+	return codificado
 
 def descifrar(cipherText, key, alfabeto):
 	#algo = open("trazaDecodificar.txt", "w")
@@ -202,13 +211,13 @@ def descifrar(cipherText, key, alfabeto):
 	#algo.write(str(cipherText)+" Llave"+str(key) +" "+'\n')
 	#print(cipherText)
 	#print("----------------------")
-	if cipherText[-1] == 0:
-		paridad = 0
-	else:
-		paridad = 1
-	cipherText.pop(-1)
+	#if cipherText[-1] == 0:
+	#	paridad = 0
+	#else:
+	#	paridad = 1
+	#cipherText.pop(-1)
 	offset = 0
-	iteraciones = cipherText[-1]
+	iteraciones = len(key)/2
 	contador = 0
 	offset = 0
 	decodificado = []
@@ -219,8 +228,10 @@ def descifrar(cipherText, key, alfabeto):
 	#print(len(cipherText))
 	#print("RESTO: ")
 	#print(len(cipherText)-(int(iteraciones)*2+1))
-	decodificado = cipherText[0:len(cipherText)-(int(iteraciones)*2+1)]
-	keys = cipherText[len(cipherText)-(int(iteraciones)*2+1):len(cipherText)-1]
+	#decodificado = cipherText[0:len(cipherText)-(int(iteraciones)*2+1)]
+	decodificado = cipherText[:]
+	#keys = cipherText[len(cipherText)-(int(iteraciones)*2+1):len(cipherText)-1]
+	keys = key
 	offset = len(keys)
 
 	#print("TEXTO CIFRADO A DESCIFRAR: ")
@@ -292,8 +303,8 @@ def descifrar(cipherText, key, alfabeto):
 	#print("//////////////")
 	#return decodificado2
 
-	if paridad == 0:
-		decodificadoR.pop(-1)
+	#if paridad == 0:
+	#	decodificadoR.pop(-1)
 	#	print("DECODIFICACION FINAL: ")
 	#print(decodificadoR)
 	#print(asciiToString(decodificadoR))
@@ -303,28 +314,46 @@ def descifrar(cipherText, key, alfabeto):
 def decodificar(cipherText, key, offset, alfabeto):
 	decodificado = cipherText[:]
 	newKey = []
-	#if(len(key)<1):
-	#	return decodificado
-	
-	for cont in range(0, len(key)):
+	contador = 0
+	if(len(key)<1):
+		return decodificado
+	#print("cipher text: ")
+	#print(cipherText)
+	#print("llave: ")
+	#print(key)
+	if offset*len(key)>=len(decodificado):
+		return decodificado
+	for cont in range(0, len(decodificado)):
+		#print("contador: "+str(contador)+ " cont "+str(cont))
 		#plainText[cont+offset*len(key)] = (plainText[cont+offset*len(key)] + key[cont])%(128) #cambiar para codificar cualquier ascii 128
+		#print(str(cont+offset*len(key))+" - "+ str(len(decodificado)))
 		if cont+offset*len(key)>=len(decodificado):
 			return decodificado
+		if contador== len(key):
+			contador = 0
 		#print("PAR DE LETRAS: " + alfabeto[plainText[cont+offset*len(key)]]+ " - " + alfabeto[key[cont]]+ " a reemplazar: " +alfabeto[(plainText[cont+offset*len(key)] + key[cont])%(26)])
-		if decodificado[cont+offset*len(key)]-key[cont]>=0:
+		if decodificado[cont]-key[contador]>=0:
 			#print("MAYOR QUE 0, PAR DE NUMEROS: " + str(decodificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((decodificado[cont+offset*len(key)] - key[cont])%(26)-1))
-			newKey.append(decodificado[cont+offset*len(key)])
-			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]-1)%(128)
+			newKey.append(decodificado[cont])
+			decodificado[cont] = (decodificado[cont] - key[contador]-1)%(128)
+			contador+=1
 		else:
 			#print("MENOR QUE 0, PAR DE NUMEROS: " + str(decodificado[cont+offset*len(key)]+1) + " - "+ str(key[cont]+1)+ " a reemplazar: " + str((decodificado[cont+offset*len(key)]+1 - key[cont]+27-1)))
-			newKey.append(decodificado[cont+offset*len(key)])
-			decodificado[cont+offset*len(key)] = (decodificado[cont+offset*len(key)] - key[cont]+128-1)%128
+			newKey.append(decodificado[cont])
+			decodificado[cont] = (decodificado[cont] - key[contador]+128-1)%128
+			contador+=1
+	offset+=1
+	return decodificado
 	#print(asciiToString(decodificado))
 	#print("######")
 	#print("nueva llave: ")
 	#print(newKey)
 	#print(newKey)
-	return decodificar(decodificado, key, offset+1, alfabeto)
+	#print("uwu "+ str(contador+offset*len(key)))
+	#if contador+offset*len(key)>=len(decodificado):
+	#	return decodificado
+	#else:
+	#	return decodificar(decodificado, key, offset, alfabeto)
 	
 
 def stringToNumber(string, alfabeto):
@@ -356,11 +385,12 @@ def asciiToString(asciiArray):
 	
 def getKey():
 	largo = 0
-	while largo == 0 or largo > 256:
-		key = input("Ingrese key que desee usar (cualquier cadena de caracteres ascii entre 1 a 256 de longitud): ")
+	while largo == 0 or largo > 64:
+		key = input("Ingrese key que desee usar (cualquier cadena de caracteres ascii entre 1 a 64 de longitud): ")
 		largo = len(key)
-	print(key)
-	return key, largo
+	word = randomWord(64-largo)
+	print(key+word)
+	return key+word
 	
 
 def analizarDif(key1, key2, tipo):
@@ -425,10 +455,10 @@ def randomWord(size):
 def crearArchivoPrueba():
 	print("Creando archivo de prueba...")
 	archivoPrueba = open('texto.test','w')
-	for i in range(1000):
+	for i in range(10000):
 		lineSize = random.randint(5,25)*2
 		line = randomWord(lineSize)
-		if i < 999:
+		if i < 9999:
 			line += '\n'
 		archivoPrueba.write(line)
 
@@ -437,9 +467,10 @@ def crearArchivoPrueba():
 
 def averageAvalancha():
 	archivo = open("texto.test","r")
-	keySize = 16
+	keySize = 64
 	key = randomWord(keySize)
 	keyAscii = stringToAscii(key)
+	tamBloques = [1, 2, 4, 8, 16]
 	i = 0
 	contador = 0
 	porcentajeDifAcum = 0
@@ -447,65 +478,247 @@ def averageAvalancha():
 		i+=1
 		linea = linea.replace('\n','')
 		textoAscii1 = stringToAscii(linea)
-		textoCifrado1 = cifrado(textoAscii1,keyAscii,alfabeto)
+		b = random.choice(tamBloques)
+		#textoCifrado1 = cifrado(textoAscii1,keyAscii,alfabeto)
+		textoCifrado1 = cifradoEnBloque(textoAscii1, keyAscii, b)
 		lineaAvalancha = list(linea)
-		lineaAvalancha[-1] = random.choice(alfabeto)
+		pos = random.randint(0,len(lineaAvalancha)-1)
 		lineaAvalancha = ''.join(lineaAvalancha)
-		print("Texto a comparar: " + linea +" "+ lineaAvalancha)
+		#print("Texto a comparar: " + linea +" "+ lineaAvalancha)
 		textoAscii2 = stringToAscii(lineaAvalancha)
-		textoCifrado2 = cifrado(textoAscii2,keyAscii,alfabeto)
-		descifrado = descifrar(textoCifrado1, keyAscii, alfabeto)
-		descifrado2 =descifrar(textoCifrado2, keyAscii, alfabeto)
+		textoAscii2[pos] = random.randint(0,127)
+		#textoCifrado2 = cifrado(textoAscii2,keyAscii,alfabeto)
+		
+		textoCifrado2 = cifradoEnBloque(textoAscii2, keyAscii, b)
+		#descifrado = descifrar(textoCifrado1, keyAscii, alfabeto)
+		descifrado = descifradoEnBloque(textoCifrado1, keyAscii, b)
+		descifrado2 = descifradoEnBloque(textoCifrado2, keyAscii, b)
+		#descifrado2 =descifrar(textoCifrado2, keyAscii, alfabeto)
 		if descifrado == textoAscii1:
 			contador+=1
 		if descifrado2 == textoAscii2:
 			contador+=1
-		print("Textos cifrados: "+ str(textoCifrado1) + " " + str(textoCifrado2))
-		cont, porcentajeDif = analizarDif(textoCifrado1,textoCifrado2,3)
+		#print("Textos cifrados: "+ str(textoCifrado1) + " " + str(textoCifrado2))
+		cont, porcentajeDif = analizarDif(textoCifrado1[:len(textoCifrado1)-1],textoCifrado2[:len(textoCifrado1)-1],3)
 		porcentajeDifAcum += porcentajeDif
 	print("i:" + str(i))
 	averageDif = porcentajeDifAcum/i
-	return averageDif, 0
+	return averageDif, contador
 
 def averageAvalanchaKey():
 	archivo = open("texto.test","r")
-	keySize = 16
+	keySize = 64
+	contador = 0
+	tamBloques = [1, 2, 4, 8, 16]
 	key = randomWord(keySize)
 	keyAscii = stringToAscii(key)
 	keyAvalancha = list(key)
-	keyAvalancha[-1] = random.choice(alfabeto)
+	pos =random.randint(0,len(keyAvalancha)-1)
+	
 	keyAvalancha = ''.join(keyAvalancha)
 	keyAvalanchaAscii = stringToAscii(keyAvalancha)
-
+	keyAvalanchaAscii[pos] = random.randint(0,127)
 	i = 0
 	porcentajeDifAcum = 0
 	for linea in archivo:
 		i+=1
 		linea = linea.replace('\n','')
 		textoAscii1 = stringToAscii(linea)
-		textoCifrado1 = cifrado(textoAscii1,keyAscii,alfabeto)
-		
-		textoCifrado2 = cifrado(textoAscii1,keyAvalanchaAscii,alfabeto)
-		print("Textos cifrados: "+ str(textoCifrado1) + " " + str(textoCifrado2))
+		#textoCifrado1 = cifrado(textoAscii1,keyAscii,alfabeto)
+		b = random.choice(tamBloques)
+		textoCifrado1 = cifradoEnBloque(textoAscii1, keyAscii, b)
+		#textoCifrado2 = cifrado(textoAscii1,keyAvalanchaAscii,alfabeto)
+		textoCifrado2 = cifradoEnBloque(textoAscii1, keyAvalanchaAscii, b)
+		descifrado = descifradoEnBloque(textoCifrado1, keyAscii, b)
+		descifrado2 = descifradoEnBloque(textoCifrado2, keyAvalanchaAscii, b)
+		#descifrado2 =descifrar(textoCifrado2, keyAscii, alfabeto)
+		if descifrado == textoAscii1:
+			contador+=1
+		if descifrado2 == textoAscii1:
+			contador+=1
+		#print("Textos cifrados: "+ str(textoCifrado1) + " " + str(textoCifrado2))
 		cont, porcentajeDif = analizarDif(textoCifrado1,textoCifrado2,3)
 		porcentajeDifAcum += porcentajeDif
-	print("i:" + str(i))
+	#print("i:" + str(i))
 	averageDif = porcentajeDifAcum/i
-	print("keys: "+ key +" "+keyAvalancha)
-	return averageDif
+	#print("keys: "+ key +" "+keyAvalancha)
+	return averageDif, contador
 
+def recibirBloques():
+	tamBloques = 0
+	while True:
+		tamBloques = input("Ingrese el tamaño de bloques con el cual desee codificar (1, 4, 8 o 16): ")
+		try:
+			tamBloques = int(tamBloques)
+		except:
+			print("Ingrese solo numeros")
+		 
+		if tamBloques == 1 or tamBloques == 4 or tamBloques == 8 or tamBloques ==16:
+			return tamBloques
 
+def sumarListas(listaA, listaB):
+	suma = []
+	if len(listaA) != len(listaB):
+		print("Error")
+		return 0
+	else: 
+		for i in range(0, len(listaA)):
+			suma.append((int(listaA[i])+int(listaB[i]))%128)
+	return suma
+
+def restarListas(listaA, listaB):
+	resta = []
+	if len(listaA) != len(listaB):
+		print("Error")
+		return 0
+	else: 
+		for i in range(0, len(listaA)):
+			if listaA[i]-listaB[i]>=0:
+				resta.append((listaA[i] - listaB[i])%(128))
+			else:
+				resta.append((listaA[i] - listaB[i]+128)%128)
+	return resta
+	
+def rotar(lista, x):
+  return lista[-x % len(lista):] + lista[:-x % len(lista)]
+	
+def cifradoEnBloque(plainText, key, tamBloques):
+	#print(tamBloques)
+	alfabeto = []
+	newPlainText = plainText[:]
+	contador = 0
+	textoCifrado = []
+	offset = 0
+	identificador = 0
+	aux = []
+	while len(newPlainText)%tamBloques != 0:
+		newPlainText.append(random.randint(0,127))
+		identificador += 1
+	iteraciones = int(len(newPlainText)/tamBloques)
+	#print(newPlainText)
+	#print(iteraciones)
+	suma = [0]*tamBloques
+	while contador < iteraciones:
+		#print("Iteracion: "+str(contador))
+		#print(newPlainText[contador*tamBloques:(contador+1)*tamBloques])
+		#aux = cifrado(newPlainText[contador*tamBloques:(contador+1)*tamBloques], key, alfabeto)
+		#textoCifrado+=aux
+		
+		bloque = newPlainText[contador*tamBloques:(contador+1)*tamBloques]
+		#print("/////")
+		#print(bloque)
+		#print("+")
+		#print(suma)
+		#print("/////")
+		bloque = sumarListas(bloque, suma)
+		suma=cifrado(bloque, key, alfabeto)
+		#print("cifrado: "+ str(suma))
+		textoCifrado+=suma
+		#print("Texto Cifrado: ")
+		#print(textoCifrado)
+		contador+=1
+	contador = 0
+	suma = [0]*tamBloques
+	textoCifrado2 = textoCifrado[::-1]
+	#textoCifrado2 = rotar(textoCifrado2, int(iteraciones/2))
+	resultado = []
+	while contador < iteraciones:
+		#print("Iteracion: "+str(contador))
+		#print(newPlainText[contador*tamBloques:(contador+1)*tamBloques])
+		#aux = cifrado(newPlainText[contador*tamBloques:(contador+1)*tamBloques], key, alfabeto)
+		#textoCifrado+=aux
+		
+		bloque = textoCifrado2[contador*tamBloques:(contador+1)*tamBloques]
+		#print("/////")
+		#print(bloque)
+		#print("+")
+		#print(suma)
+		#print("/////")
+		bloque = sumarListas(bloque, suma)
+		suma=cifrado(bloque, key, alfabeto)
+		#print("cifrado: "+ str(suma))
+		resultado+=suma
+		#print("Texto Cifrado: ")
+		#print(textoCifrado)
+		contador+=1
+	#print("CIFRADO EN BLOQUE: ")
+	#resultado = rotar(resultado, int(iteraciones/2))
+	#resultado = cifrado(resultado[::-1],key[::-1],[])
+	resultado.append(identificador)
+	resultado = cifrado(resultado, key, [])
+	#print(resultado)
+	return resultado
+def descifradoEnBloque(cipherText, key, tamBloques):
+	#print("descifrado en bloque texto: ")
+	#print(cipherText)
+	contador = 0
+	newCipherText = descifrar(cipherText, key, [])
+	suma = [0]*tamBloques
+	#print(newCipherText)
+	#newCipherText = cipherText[:]
+	identificador = newCipherText.pop(-1)
+	#newCipherText = descifrar(newCipherText[::-1], key[::-1], [])
+	iteraciones = int(len(newCipherText)/tamBloques)
+	#newCipherText = rotar(newCipherText, int(iteraciones/2))
+	#print(iteraciones)
+	descifrado = []
+	for contador in range(0, iteraciones):
+		bloque = newCipherText[contador*tamBloques:(contador+1)*tamBloques]
+		#suma = descifrar(bloque, key, alfabeto)
+		
+		#descifrado += descifrar(newCipherText[contador*tamBloques:(contador+1)*tamBloques], key, [])
+		d = descifrar(bloque, key, alfabeto)
+		resta = restarListas(d, suma)
+		descifrado += resta 
+		#print("/////")
+		#print(d)
+		#print("+")
+		#print(suma)
+		#print("/////")
+		suma = bloque
+		
+		#print("descifrado: "+ str(resta))
+		#print(descifrado)
+	suma = [0]*tamBloques
+	descifrado=descifrado[::-1]
+	#rotar(descifrado, -int(iteraciones/2))
+	descifrado2= []
+	for contador in range(0, iteraciones):
+		bloque = descifrado[contador*tamBloques:(contador+1)*tamBloques]
+		#suma = descifrar(bloque, key, alfabeto)
+		
+		#descifrado += descifrar(newCipherText[contador*tamBloques:(contador+1)*tamBloques], key, [])
+		d = descifrar(bloque, key, alfabeto)
+		resta = restarListas(d, suma)
+		#print("descifrado2 "+ str(descifrado2))
+		#print("/////")
+		#print(d)
+		#print("+")
+		#print(suma)
+		#print("/////")
+		descifrado2 += resta 
+		
+		suma = bloque
+		
+		#print("descifrado: "+ str(resta))
+		#print(descifrado)
+	while identificador > 0:
+		descifrado2.pop(-1)
+		identificador-=1
+	#print("DESCIFRADO EN BLOQUE: ")
+	#print(descifrado)
+	return descifrado2
 
 crearArchivoPrueba()
 averageDifWord, cifradosCorrectos = averageAvalancha()	
-#averageDifKey = averageAvalanchaKey()
-
+averageDifKey, cifradosCorrectos2 = averageAvalanchaKey()
 print("El porcentaje de diferencia promedio de los textos cifrados (cambiando texto) es de: " + str(averageDifWord) + "%")
-#print("El porcentaje de diferencia promedio de los textos cifrados (cambiando llave) es de: " + str(averageDifKey) + "%")
-#print("numero de cifrados correctos: ")
-		
-llave, largo = getKey()
-llave2, largo2 = getKey()
+print("El porcentaje de diferencia promedio de los textos cifrados (cambiando llave) es de: " + str(averageDifKey) + "%")
+print("numero de cifrados correctos cambiando textos es: " +str(cifradosCorrectos))	
+print("numero de cifrados correctos cambiando key es: " +str(cifradosCorrectos2))		
+llave = getKey()
+llave2 = getKey()
+bloques = recibirBloques()
 llaveAscii = stringToAscii(llave)
 llaveAscii2 = stringToAscii(llave2)
 #stringKey = asciiToString(llaveAscii)
@@ -519,6 +732,10 @@ print("Texto plano original transformado desde ascii")
 print(asciiToString(textoAscii))
 print("----------------------------------")
 textoAscii2 = stringToAscii(plainText22)
+cifBloque = cifradoEnBloque(textoAscii, llaveAscii, bloques)
+descBloque = descifradoEnBloque(cifBloque, llaveAscii, bloques)
+print("DESCIFRADO BLOQUES: ")
+print(asciiToString(descBloque))
 plainText2 = stringToNumber(plainText, alfabeto)
 llave2number = stringToNumber(llave2, alfabeto)
 plainText222 = stringToNumber(plainText22, alfabeto)
@@ -542,11 +759,17 @@ descifradoAlreves4 = decodificar(descifradoAlreves3, llaveAscii, 0, alfabeto)
 #number_string = numberToString(numberArray, alfabeto)
 #print(asciiToString(textoCifrado))
 textoDecodificado = decodificar(textoCifrado, llaveAscii, 0, alfabeto)
+c = cifrado(textoAscii, llaveAscii, 0)
+d = descifrar(c, llaveAscii, 0)
 #textoDecodificado2 = decodificar(textoCifrado2, llaveAscii2, 0, alfabeto)
 print("texto descifrado 1: ")
 print(asciiToString(textoDecodificado))
 print("descifrado al reves 1: ")
 print(asciiToString(descifradoAlreves4))
+print("codificado por cifrado: ")
+print(asciiToString(c))
+print("descifrado por descifrar: ")
+print(asciiToString(d))
 #print("//////////")
 #print("texto descifrado 2: ")
 #print(asciiToString(textoDecodificado2))
