@@ -18,9 +18,10 @@ def menu():
             return 0
         elif user_input=="1":
             llave = getKey()
+            plainText = input("Ingrese texto a codificar: ")
             bloques = recibirBloques()
             llaveAscii = stringToAscii(llave)        	
-            plainText = input("Ingrese texto a codificar: ")
+            
             textoAscii = stringToAscii(plainText)
             start_time = time.time()
             cifBloque = cifradoEnBloque(textoAscii, llaveAscii, bloques)
@@ -28,8 +29,8 @@ def menu():
             print("Palabra descifrada: "+ asciiToString(descBloque))
             exec_time = (time.time() - start_time)
             print("Tiempo de cifrado: %s segundos" % exec_time)
-            throuhgput = bloques/(time.time() - start_time)
-            print("Throuhgput: %s" % throuhgput)
+            throughput = bloques/(time.time() - start_time)
+            print("Throughput: %s" % throughput)
         elif user_input == "2":
             rendimiento()
         else:
@@ -38,27 +39,27 @@ def menu():
     return
  
 def rendimiento():
-	key = randomWord(64)
-	word = randomWord(128)
+	key = randomWord(32)
+	word = randomWord(64)
 	print("Llave a utilizar: %s" % key)
 	print("Palabra a encriptar: %s" % word)
 	llaveAscii = stringToAscii(key)        	
 	textoAscii = stringToAscii(word)
 	sizeBloques = [1,4,8,16]
 	tiempos = []
-	throuhgputs = []
+	throughputs = []
 	for size in sizeBloques:
 		start_time = time.time()
 		cifBloque = cifradoEnBloque(textoAscii, llaveAscii, size)
 		exec_time = (time.time() - start_time)
-		throuhgput = size/(time.time() - start_time)
+		throughput = size/(time.time() - start_time)
 		print("Tiempo de cifrado (tamaño " + str(size) + "): %s segundos" % exec_time)
-		print("Throuhgput (tamaño " + str(size) + "): %s" % throuhgput)
+		print("Throughput (tamaño " + str(size) + "): %s" % throughput)
 		tiempos.append(exec_time)
-		throuhgputs.append(throuhgput)
+		throughputs.append(throughput)
 
 	graficar("Tiempo de ejecucion encriptacion","Tamaño de bloque", "Tiempo [s]", sizeBloques, tiempos)
-	graficar("Throughput encriptacion", "Tamaño de bloque", "Throughput", sizeBloques, throuhgputs)
+	graficar("Throughput encriptacion", "Tamaño de bloque", "Throughput", sizeBloques, throughputs)
 
 def graficar(title,xlabel,ylabel,x,y):
 	print("Mostrando grafico...")
