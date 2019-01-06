@@ -1,6 +1,6 @@
-import numpy as np
-from numpy import sin, linspace, pi
 import random
+import time
+import matplotlib.pyplot as plt
 
 archivos = []
 def menu():
@@ -9,35 +9,67 @@ def menu():
     while option == 0:
         print('Menu Principal')
         print('Opciones:')
-        print('1) Ingresar nombre de archivo de texto plano')
-        print('2) Salir')
+        print('1) Encriptar')
+        print('2) Pruebas de rendimiento')
+        print('3) Salir')
         user_input = input('Ingrese el numero de la opcion que desea ejecutar: ')
-        if user_input=="2":
+        if user_input=="3":
             #se retorna y finaliza el programa
             return 0
         elif user_input=="1":
-            #se pide ingresar un nombre de archivo
-            error = 1
-            while error == 1:
-                input_nombre = input('Ingrese nombre del archivo de texto plano: ')
-                #la apertura se realiza inicialmente en un try-except, para evitar que el programa se caiga
-                #en caso de que el archivo no pueda ser abierto
-                try:
-                    open(input_nombre, 'rb')
-                    error = 0
-                except FileNotFoundError:
-                    error = 1       
-                    print('nombre de archivo no existente o fuera de directorio')
-            #llamado a funcion que abre un archivo verificado y retorna datos de este
-            textoPlano = open(input_nombre, 'r')
-            archivos.append(textoPlano)
-            option = second_menu(archivos)
-            
+            llave = getKey()
+            bloques = recibirBloques()
+            llaveAscii = stringToAscii(llave)        	
+            plainText = input("Ingrese texto a codificar: ")
+            textoAscii = stringToAscii(plainText)
+            start_time = time.time()
+            cifBloque = cifradoEnBloque(textoAscii, llaveAscii, bloques)
+            descBloque = descifradoEnBloque(cifBloque, llaveAscii, bloques)
+            print("Palabra descifrada: "+ asciiToString(descBloque))
+            exec_time = (time.time() - start_time)
+            print("Tiempo de cifrado: %s segundos" % exec_time)
+            throuhgput = bloques/(time.time() - start_time)
+            print("Throuhgput: %s" % throuhgput)
+        elif user_input == "2":
+            rendimiento()
         else:
             print('Ingrese una opcion correcta')
             
     return
  
+def rendimiento():
+	key = randomWord(64)
+	word = randomWord(128)
+	print("Llave a utilizar: %s" % key)
+	print("Palabra a encriptar: %s" % word)
+	llaveAscii = stringToAscii(key)        	
+	textoAscii = stringToAscii(word)
+	sizeBloques = [1,4,8,16]
+	tiempos = []
+	throuhgputs = []
+	for size in sizeBloques:
+		start_time = time.time()
+		cifBloque = cifradoEnBloque(textoAscii, llaveAscii, size)
+		exec_time = (time.time() - start_time)
+		throuhgput = size/(time.time() - start_time)
+		print("Tiempo de cifrado (tamaño " + str(size) + "): %s segundos" % exec_time)
+		print("Throuhgput (tamaño " + str(size) + "): %s" % throuhgput)
+		tiempos.append(exec_time)
+		throuhgputs.append(throuhgput)
+
+	graficar("Tiempo de ejecucion encriptacion","Tamaño de bloque", "Tiempo [s]", sizeBloques, tiempos)
+	graficar("Throughput encriptacion", "Tamaño de bloque", "Throughput", sizeBloques, throuhgputs)
+
+def graficar(title,xlabel,ylabel,x,y):
+	print("Mostrando grafico...")
+	plt.title(title)
+	plt.xlabel(xlabel)
+	plt.ylabel(ylabel)
+	plt.plot(x,y,"-")
+	plt.show()
+
+	
+
 def second_menu(archivos):
 	textoCifrado = []
 	textoDescifrado = []
@@ -217,13 +249,10 @@ def analizarDif(key1, key2, tipo):
 				contador = contador + 1
 	pDiferencia = 100*contador/largo
 	if tipo == 2:
-		print("Llave 2 se diferencia de Llave 1 en un " +str(pDiferencia)+ "% y "+ str(contador) +" caracteres")
 		return contador
 	elif tipo == 1:
-		print("Texto 2 se diferencia de Texto 1 en un " +str(pDiferencia)+ "% y "+ str(contador) +" caracteres")
 		return contador
 	else:
-		print("Texto Cifrado 2 se diferencia de Texto Cifrado 1 en un " +str(pDiferencia)+ "% y "+ str(contador) +" caracteres")
 		return contador, pDiferencia
 #Entrada: dos textos planos, dos llaves y dos textos cifrados
 #Funcionamiento: calcula la avalancha entre dos textos cifrados provenientes de textos planos distintos
@@ -265,7 +294,9 @@ def avalancha(plainText1, plainText2, key1, key2, cifrado1, cifrado2):
 def randomWord(size):
 	line = ''
 	for c in range(size):
-		line += str(asciiToString(str(random.randint(0,127))))
+
+		randomChar = chr(random.randint(33,126))
+		line += randomChar
 	return line
 
 #Funcionamiento: crea un archivo de prueba con "x" lineas, se utiliza para calcular la avalancha average del algoritmo de cifrado
@@ -273,12 +304,13 @@ def randomWord(size):
 def crearArchivoPrueba():
 	print("Creando archivo de prueba...")
 	archivoPrueba = open('texto.test','w')
-	for i in range(10000):
-		lineSize = random.randint(5,25)*2
+	for i in range(100):
+		lineSize = random.randint(10,50)
 		line = randomWord(lineSize)
-		if i < 9999:
+		if i < 99:
 			line += '\n'
 		archivoPrueba.write(line)
+	archivoPrueba.close()
 
 #Funcionamiento: se lee el archivo creado por crearArchivoPrueba, se generan llaves iguales. En cada iteracion se crea una copia de la linea leida por el archivo, se cambia al azar solo un elemento
 #y se cifra, luego a los dos resultados se le calcula la avalancha y el valor resultante se acumula
@@ -313,7 +345,6 @@ def averageAvalancha():
 			contador+=1
 		cont, porcentajeDif = analizarDif(textoCifrado1[:len(textoCifrado1)-1],textoCifrado2[:len(textoCifrado1)-1],3)
 		porcentajeDifAcum += porcentajeDif
-	print("i:" + str(i))
 	averageDif = porcentajeDifAcum/i
 	return averageDif, contador
 #Funcionamiento: mismo caso que el anterior, pero esta vez se cambia un caracter al azar de la llave, dejando el texto leido en el archivo sin modificar
@@ -475,60 +506,4 @@ print("El porcentaje de diferencia promedio de los textos cifrados (cambiando te
 print("El porcentaje de diferencia promedio de los textos cifrados (cambiando llave) es de: " + str(averageDifKey) + "%")
 print("numero de cifrados correctos cambiando textos es: " +str(cifradosCorrectos))	
 print("numero de cifrados correctos cambiando key es: " +str(cifradosCorrectos2))		
-llave = getKey()
-llave2 = getKey()
-bloques = recibirBloques()
-llaveAscii = stringToAscii(llave)
-llaveAscii2 = stringToAscii(llave2)
-plainText = input("Ingrese texto a codificar: ")
-plainText22 = input("ingrese texto 2 a codificar: ")
-textoAscii = stringToAscii(plainText)
-print("----------------------")
-print("Texto plano en ascii")
-print(textoAscii)
-print("Texto plano original transformado desde ascii")
-print(asciiToString(textoAscii))
-print("----------------------------------")
-textoAscii2 = stringToAscii(plainText22)
-cifBloque = cifradoEnBloque(textoAscii, llaveAscii, bloques)
-descBloque = descifradoEnBloque(cifBloque, llaveAscii, bloques)
-print("DESCIFRADO BLOQUES: ")
-print(asciiToString(descBloque))
-textoCifrado = codificar(textoAscii, llaveAscii, 0)
-cifradoAlreves = codificar(textoAscii[::-1], llaveAscii, 0)
-cifradoAlreves2 = codificar(cifradoAlreves, stringToAscii("dsa"), 0)
-cifradoAlreves3 = codificar(cifradoAlreves2, stringToAscii("aaa"), 0)
-cifradoAlreves4 = codificar(cifradoAlreves3, stringToAscii("uwu"), 0)
-descifradoAlreves = decodificar(cifradoAlreves4, stringToAscii("uwu"), 0)
-descifradoAlreves2 = decodificar(descifradoAlreves, stringToAscii("aaa"), 0)
-descifradoAlreves3 = decodificar(descifradoAlreves2, stringToAscii("dsa"), 0)
-descifradoAlreves4 = decodificar(descifradoAlreves3, llaveAscii, 0)
-textoDecodificado = decodificar(textoCifrado, llaveAscii, 0)
-c = cifrado(textoAscii, llaveAscii)
-d = descifrar(c, llaveAscii)
-print("texto descifrado 1: ")
-print(asciiToString(textoDecodificado))
-print("descifrado al reves 1: ")
-print(asciiToString(descifradoAlreves4))
-print("codificado por cifrado: ")
-print(asciiToString(c))
-print("descifrado por descifrar: ")
-print(asciiToString(d))
-#print("//////////")
-#print("texto descifrado 2: ")
-#print(asciiToString(textoDecodificado2))
-#print("////////")
-#avalancha(plainText2, plainText222, numberArray, llave2number, textoCifrado, textoCifrado2)
-cifrado_texto1 = cifrado(textoAscii, llaveAscii)
-cifrado_texto2 = cifrado(textoAscii2, llaveAscii2)
-avalancha(plainText2, plainText222, numberArray, llave2number, cifrado_texto1, cifrado_texto2)
-descifrado_texto1 = descifrar(cifrado_texto1, llaveAscii)
-descifrado_texto2 = descifrar(cifrado_texto2, llaveAscii2)
-if descifrado_texto1 == textoAscii and descifrado_texto2 == textoAscii2:
-	print("$$$$$$$$$$$$$$$$$$$$$")
-	print("CIFRADO-DESCIFRADO CORRECTO")
-	print
-	print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-else:
-	print("CIFRADO INCORRECTO")
 menu()
