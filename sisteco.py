@@ -63,9 +63,14 @@ def analisisFrecuencias(cant):
 		for c in palabra:
 			frequency[c] += 1
 	print("Frecuencias: ")
+	total = 0
 	for x in frequency:
-		print(x + ": " + str(frequency[x]))
-
+		total += frequency[x]
+	porcentaje = 0
+	for x in frequency:
+		frequency[x] = float(frequency[x]/total)*100
+		print(x + ": " + str(frequency[x]) + "%")
+		porcentaje += frequency[x]
 
 def rendimiento():
 	key = randomWord(32)
