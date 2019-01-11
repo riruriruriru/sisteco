@@ -1,43 +1,72 @@
 import random
 import time
 import matplotlib.pyplot as plt
+import collections
+
 
 archivos = []
 def menu():
-    #Muestra el menu principal y usando input se pide al usuario que ingrese la opcion que desea ejecutar
-    option = 0
-    while option == 0:
-        print('Menu Principal')
-        print('Opciones:')
-        print('1) Encriptar')
-        print('2) Pruebas de rendimiento')
-        print('3) Salir')
-        user_input = input('Ingrese el numero de la opcion que desea ejecutar: ')
-        if user_input=="3":
-            #se retorna y finaliza el programa
-            return 0
-        elif user_input=="1":
-            llave = getKey()
-            plainText = input("Ingrese texto a codificar: ")
-            bloques = recibirBloques()
-            llaveAscii = stringToAscii(llave)        	
-            
-            textoAscii = stringToAscii(plainText)
-            start_time = time.time()
-            cifBloque = cifradoEnBloque(textoAscii, llaveAscii, bloques)
-            descBloque = descifradoEnBloque(cifBloque, llaveAscii, bloques)
-            print("Palabra descifrada: "+ asciiToString(descBloque))
-            exec_time = (time.time() - start_time)
-            print("Tiempo de cifrado: %s segundos" % exec_time)
-            throughput = bloques/(time.time() - start_time)
-            print("Throughput: %s" % throughput)
-        elif user_input == "2":
-            rendimiento()
-        else:
-            print('Ingrese una opcion correcta')
-            
-    return
- 
+	#Muestra el menu principal y usando input se pide al usuario que ingrese la opcion que desea ejecutar
+	option = 0
+	while option == 0:
+		print('Menu Principal')
+		print('Opciones:')
+		print('1) Encriptar')
+		print('2) Pruebas de rendimiento')
+		print('3) Analisis de frecuencias')
+		print('4) Analisis de avalancha')
+		print('5) Salir')
+		user_input = input('Ingrese el numero de la opcion que desea ejecutar: ')
+		if user_input=="5":
+			#se retorna y finaliza el programa
+			return 0
+		elif user_input=="1":
+			llave = getKey()
+			plainText = input("Ingrese texto a codificar: ")
+			bloques = recibirBloques()
+			llaveAscii = stringToAscii(llave)        	
+
+			textoAscii = stringToAscii(plainText)
+			start_time = time.time()
+			cifBloque = cifradoEnBloque(textoAscii, llaveAscii, bloques)
+			descBloque = descifradoEnBloque(cifBloque, llaveAscii, bloques)
+			print("Palabra descifrada: "+ asciiToString(descBloque))
+			exec_time = (time.time() - start_time)
+			print("Tiempo de cifrado: %s segundos" % exec_time)
+			throughput = bloques/(time.time() - start_time)
+			print("Throughput: %s" % throughput)
+		elif user_input == "2":
+			rendimiento()
+		elif user_input == "3":
+			analisisFrecuencias(1000)
+		elif user_input == "4":
+			crearArchivoPrueba()
+			averageDifWord, cifradosCorrectos = averageAvalancha()	
+			averageDifKey, cifradosCorrectos2 = averageAvalanchaKey()
+			print("El porcentaje de diferencia promedio de los textos cifrados (cambiando texto) es de: " + str(averageDifWord) + "%")
+			print("El porcentaje de diferencia promedio de los textos cifrados (cambiando llave) es de: " + str(averageDifKey) + "%")
+			print("numero de cifrados correctos cambiando textos es: " +str(cifradosCorrectos))	
+			print("numero de cifrados correctos cambiando key es: " +str(cifradosCorrectos2))		
+		else:
+			print('Ingrese una opcion correcta')
+
+	return
+
+def analisisFrecuencias(cant):
+	palabras = []
+	for i in range(cant):
+		size = random.randint(10,50)
+		word = randomWord(size)
+		palabras.append(word)
+	frequency = collections.defaultdict(int)
+	for palabra in palabras: 
+		for c in palabra:
+			frequency[c] += 1
+	print("Frecuencias: ")
+	for x in frequency:
+		print(x + ": " + str(frequency[x]))
+
+
 def rendimiento():
 	key = randomWord(32)
 	word = randomWord(64)
@@ -500,11 +529,5 @@ def descifradoEnBloque(cipherText, key, tamBloques):
 #solo falta mejorar el menu y calcular la ecuacion que sale en el informe, todo lo demas esta listo uwu, casi todo lo que esta de aca hacia abajo hay que borrarlo para la version final y dejar el menu nomas
 ####################################################################
 
-crearArchivoPrueba()
-averageDifWord, cifradosCorrectos = averageAvalancha()	
-averageDifKey, cifradosCorrectos2 = averageAvalanchaKey()
-print("El porcentaje de diferencia promedio de los textos cifrados (cambiando texto) es de: " + str(averageDifWord) + "%")
-print("El porcentaje de diferencia promedio de los textos cifrados (cambiando llave) es de: " + str(averageDifKey) + "%")
-print("numero de cifrados correctos cambiando textos es: " +str(cifradosCorrectos))	
-print("numero de cifrados correctos cambiando key es: " +str(cifradosCorrectos2))		
+
 menu()
