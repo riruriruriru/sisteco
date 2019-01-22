@@ -25,12 +25,14 @@ def menu():
             textoAscii = stringToAscii(plainText)
             start_time = time.time()
             cifBloque = cifradoEnBloque(textoAscii, llaveAscii, bloques)
-            descBloque = descifradoEnBloque(cifBloque, llaveAscii, bloques)
+            descBloque, mac = descifradoEnBloque(cifBloque, llaveAscii, bloques)
             print("Palabra descifrada: "+ asciiToString(descBloque))
             exec_time = (time.time() - start_time)
             print("Tiempo de cifrado: %s segundos" % exec_time)
             throughput = bloques/(time.time() - start_time)
             print("Throughput: %s" % throughput)
+            comprobarMac(descBloque, llaveAscii, mac, bloques)
+
         elif user_input == "2":
             rendimiento()
         else:
@@ -39,7 +41,7 @@ def menu():
     return
  
 def rendimiento():
-	key = randomWord(32)
+	key = randomWord(64)
 	word = randomWord(64)
 	print("Llave a utilizar: %s" % key)
 	print("Palabra a encriptar: %s" % word)
@@ -306,7 +308,7 @@ def crearArchivoPrueba():
 	print("Creando archivo de prueba...")
 	archivoPrueba = open('texto.test','w')
 	for i in range(100):
-		lineSize = random.randint(10,50)
+		lineSize = random.randint(10,64)
 		line = randomWord(lineSize)
 		if i < 99:
 			line += '\n'
@@ -432,6 +434,16 @@ def rotar(lista, x):
 #agrega un numero que indica cuandos digitos se tuvieron que agregar para que el texto fuera divisible
 #se cifra para enmascarar el numero agregado
 #se retorna texto cifrado final
+def orex(texto1, texto2):
+	resultadoOrex = []
+	for i in range(0, len(texto1)):
+		resultadoOrex.append(int(texto1[i])^int(texto2[i]))
+	#print (resultadoOrex)
+	#print(asciiToString(resultadoOrex))
+	return resultadoOrex
+
+
+
 def cifradoEnBloque(plainText, key, tamBloques):
 	alfabeto = []
 	newPlainText = plainText[:]
@@ -441,14 +453,17 @@ def cifradoEnBloque(plainText, key, tamBloques):
 	identificador = 0
 	aux = []
 	while len(newPlainText)%tamBloques != 0:#se agregan elementos hasta que el texto sea divisible en bloques del tamaño determinado
-		newPlainText.append(random.randint(0,127))
+		newPlainText.append(0)
 		identificador += 1
 	iteraciones = int(len(newPlainText)/tamBloques)
 	suma = [0]*tamBloques
 	while contador < iteraciones:
 		
 		bloque = newPlainText[contador*tamBloques:(contador+1)*tamBloques]#se obtiene el bloque que sera cifrado en esta iteracion
-		bloque = sumarListas(bloque, suma)#se le suma un vector que inicialmente se encuentra lleno de ceros
+		
+		bloque = orex(bloque, suma)
+
+		#bloque = sumarListas(bloque, suma)#se le suma un vector que inicialmente se encuentra lleno de ceros
 		suma=cifrado(bloque, key)#se cifra el resultado de la suma
 		textoCifrado+=suma#se concatena al texto cifrado parcial
 		contador+=1
@@ -456,12 +471,20 @@ def cifradoEnBloque(plainText, key, tamBloques):
 	suma = [0]*tamBloques
 	textoCifrado2 = textoCifrado[::-1]#se invierte texto cifrado parcial
 	resultado = []
+	mac = []
 	while contador < iteraciones:#se repite proceso anterior pero con texto cifrado parcial invertido
 		bloque = textoCifrado2[contador*tamBloques:(contador+1)*tamBloques]
-		bloque = sumarListas(bloque, suma)
+		bloque = orex(bloque, suma)
+		#bloque = sumarListas(bloque, suma)
 		suma=cifrado(bloque, key)
 		resultado+=suma
+		if contador == iteraciones -1:
+			mac = suma
+			resultado+=mac
+
 		contador+=1
+	print("MAC cifrado: " +str(mac))
+	
 	resultado.append(identificador)#se agrega identificador de caracteres agregados
 	resultado = cifrado(resultado, key)#se cifra una ultima vez
 	return resultado
@@ -474,12 +497,21 @@ def descifradoEnBloque(cipherText, key, tamBloques):
 	newCipherText = descifrar(cipherText, key)
 	suma = [0]*tamBloques
 	identificador = newCipherText.pop(-1)
+	#print(newCipherText)
+	mac = newCipherText[len(newCipherText)-(tamBloques):]
+	#print("LARGO DEL MAC "+ str(len(mac)))
+	#print("INICIO MAC")
+	#print(mac)
+	#print("FIN MAC")
+	newCipherText = newCipherText[0:len(newCipherText) - tamBloques]
+	#print("Texto cifrado cortado antes de descifrar uwu "+str(newCipherText))
 	iteraciones = int(len(newCipherText)/tamBloques)
 	descifrado = []
 	for contador in range(0, iteraciones):
 		bloque = newCipherText[contador*tamBloques:(contador+1)*tamBloques]
 		d = descifrar(bloque, key)
-		resta = restarListas(d, suma)
+		resta = orex(d, suma)
+		#resta = restarListas(d, suma)
 		descifrado += resta 
 		suma = bloque
 	suma = [0]*tamBloques
@@ -488,23 +520,36 @@ def descifradoEnBloque(cipherText, key, tamBloques):
 	for contador in range(0, iteraciones):
 		bloque = descifrado[contador*tamBloques:(contador+1)*tamBloques]
 		d = descifrar(bloque, key)
-		resta = restarListas(d, suma)
+		resta = orex(d, suma)
+		#resta = restarListas(d, suma)
 		descifrado2 += resta 
 		suma = bloque
 	while identificador > 0:
 		descifrado2.pop(-1)
 		identificador-=1
-	return descifrado2
+	return descifrado2, mac
+def comprobarMac(descifrado, key, mac, tamBloques):
+	#print(str(descifrado) + " "  + str(key) + " " + str(mac) + " " + str(tamBloques))
+	cifrado = cifradoEnBloque(descifrado, key, tamBloques)
+	cifrado = descifrar(cifrado,key)
+	identificador = cifrado.pop(-1)
+
+	print(cifrado)
+	macComprobacion = cifrado[len(cifrado)-tamBloques:]
+	print("MAC: " + str(mac) + " macComp: " + str(macComprobacion))
+	if macComprobacion == mac:
+		print("Mac es valido uwu")
 
 ###################INICIO PROGRAMA PRINCIPAL########################
 #solo falta mejorar el menu y calcular la ecuacion que sale en el informe, todo lo demas esta listo uwu, casi todo lo que esta de aca hacia abajo hay que borrarlo para la version final y dejar el menu nomas
 ####################################################################
-
+'''
 crearArchivoPrueba()
 averageDifWord, cifradosCorrectos = averageAvalancha()	
 averageDifKey, cifradosCorrectos2 = averageAvalanchaKey()
 print("El porcentaje de diferencia promedio de los textos cifrados (cambiando texto) es de: " + str(averageDifWord) + "%")
 print("El porcentaje de diferencia promedio de los textos cifrados (cambiando llave) es de: " + str(averageDifKey) + "%")
 print("numero de cifrados correctos cambiando textos es: " +str(cifradosCorrectos))	
-print("numero de cifrados correctos cambiando key es: " +str(cifradosCorrectos2))		
+print("numero de cifrados correctos cambiando key es: " +str(cifradosCorrectos2))
+'''		
 menu()
