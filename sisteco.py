@@ -9,7 +9,7 @@ def menu():
     while option == 0:
         print('Menu Principal')
         print('Opciones:')
-        print('1) Encriptar')
+        print('1) Encriptar y obtener MAC')
         print('2) Pruebas de rendimiento')
         print('3) Salir')
         user_input = input('Ingrese el numero de la opcion que desea ejecutar: ')
@@ -445,6 +445,7 @@ def orex(texto1, texto2):
 
 
 def cifradoEnBloque(plainText, key, tamBloques):
+	print("Cifrando...")
 	alfabeto = []
 	newPlainText = plainText[:]
 	contador = 0
@@ -457,6 +458,7 @@ def cifradoEnBloque(plainText, key, tamBloques):
 		identificador += 1
 	iteraciones = int(len(newPlainText)/tamBloques)
 	suma = [0]*tamBloques
+	print("Primer CBC: ")
 	while contador < iteraciones:
 		
 		bloque = newPlainText[contador*tamBloques:(contador+1)*tamBloques]#se obtiene el bloque que sera cifrado en esta iteracion
@@ -467,11 +469,13 @@ def cifradoEnBloque(plainText, key, tamBloques):
 		suma=cifrado(bloque, key)#se cifra el resultado de la suma
 		textoCifrado+=suma#se concatena al texto cifrado parcial
 		contador+=1
+	print("Cifrado parcial: "+str(textoCifrado))
 	contador = 0#se reinician variables
 	suma = [0]*tamBloques
 	textoCifrado2 = textoCifrado[::-1]#se invierte texto cifrado parcial
 	resultado = []
 	mac = []
+	print("Segundo CBC con texto cifrado parcial invertido")
 	while contador < iteraciones:#se repite proceso anterior pero con texto cifrado parcial invertido
 		bloque = textoCifrado2[contador*tamBloques:(contador+1)*tamBloques]
 		bloque = orex(bloque, suma)
@@ -483,10 +487,11 @@ def cifradoEnBloque(plainText, key, tamBloques):
 			resultado+=mac
 
 		contador+=1
-	print("MAC cifrado: " +str(mac))
+	print("MAC: " +str(mac))
 	
 	resultado.append(identificador)#se agrega identificador de caracteres agregados
 	resultado = cifrado(resultado, key)#se cifra una ultima vez
+	print("Mensaje cifrado con MAC concatenado y cifrado: "+ str(resultado))
 	return resultado
 #Funcion principal de descifrado en bloques, llama a decodificar y a descifrar
 #Entradas: texto cifrado, llave original y tamaño de bloques
@@ -499,6 +504,7 @@ def descifradoEnBloque(cipherText, key, tamBloques):
 	identificador = newCipherText.pop(-1)
 	#print(newCipherText)
 	mac = newCipherText[len(newCipherText)-(tamBloques):]
+	print("Obtencion del MAC en descifrado: " + str(mac))
 	#print("LARGO DEL MAC "+ str(len(mac)))
 	#print("INICIO MAC")
 	#print(mac)
@@ -527,18 +533,19 @@ def descifradoEnBloque(cipherText, key, tamBloques):
 	while identificador > 0:
 		descifrado2.pop(-1)
 		identificador-=1
+	print("Resultado descifrado en ascii: "+str(descifrado2))
 	return descifrado2, mac
 def comprobarMac(descifrado, key, mac, tamBloques):
 	#print(str(descifrado) + " "  + str(key) + " " + str(mac) + " " + str(tamBloques))
+	print("Verificando MAC...")
 	cifrado = cifradoEnBloque(descifrado, key, tamBloques)
 	cifrado = descifrar(cifrado,key)
 	identificador = cifrado.pop(-1)
-
-	print(cifrado)
 	macComprobacion = cifrado[len(cifrado)-tamBloques:]
-	print("MAC: " + str(mac) + " macComp: " + str(macComprobacion))
+	print("MAC obtenido desde el mensaje desencriptado: " + str(mac))
+	print("Verificacion del MAC: " + str(macComprobacion))
 	if macComprobacion == mac:
-		print("Mac es valido uwu")
+		print("Mac es valido")
 
 ###################INICIO PROGRAMA PRINCIPAL########################
 #solo falta mejorar el menu y calcular la ecuacion que sale en el informe, todo lo demas esta listo uwu, casi todo lo que esta de aca hacia abajo hay que borrarlo para la version final y dejar el menu nomas
